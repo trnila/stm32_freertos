@@ -2,10 +2,10 @@
 #include "stm32f1xx_hal.h"
 #include "../Messages/messages.pb.h"
 
-void task_reverse(void *param) {
+void task_handle_gpio(void *param) {
 	GpioControlMsg msg;
 	for(;;) {
-		msg_recv(1, &msg);
+		msg_recv(0, &msg);
 
 		GPIO_TypeDef* gpio;
 		if(msg.port == GpioControlMsg_Port_PortA) {

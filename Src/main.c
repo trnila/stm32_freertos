@@ -138,8 +138,8 @@ int main(void)
 
   osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 128);
   uartTaskHandle = osThreadCreate(osThread(uartTask), &huart1);
-  osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
-  reverseTaskHandle = osThreadCreate(osThread(reverseTask), NULL);
+  osThreadDef(reverseTask, task_handle_gpio, osPriorityNormal, 0, 128);
+  osThreadCreate(osThread(reverseTask), NULL);
 
   /*char data[] = {'A', 'B', 'C', 'D'};
   xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);

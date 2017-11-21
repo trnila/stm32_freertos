@@ -52,6 +52,11 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
+#include "pb.h"
+#include "pb_decode.h"
+#include "../Messages/messages.pb.h"
+#include "tasks.h"
+#include "communication.h"
 
 /* USER CODE END Includes */
 
@@ -63,6 +68,7 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 osThreadId uartTaskHandle;
+osThreadId reverseTaskHandle;
 
 /* USER CODE END PV */
 
@@ -78,22 +84,14 @@ void StartDefaultTask(void const * argument);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-void StartUartTask(void *param) {
-	uint8_t msg[] = "ahoj\r\n";
-	for(;;) {
-		HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
-		osDelay(1000);
-	}
-}
-
 /* USER CODE END 0 */
 
 int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	__disable_irq();
-	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+	//__disable_irq();
+//	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
   /* USER CODE END 1 */
 
@@ -120,7 +118,6 @@ int main(void)
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -133,12 +130,27 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 16);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  osThreadDef(uartTask, StartUartTask, osPriorityHigh, 0, 128);
-  uartTaskHandle = osThreadCreate(osThread(uartTask), NULL);
+  msg_init();
+
+  osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 128);
+  uartTaskHandle = osThreadCreate(osThread(uartTask), &huart1);
+  osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
+  reverseTaskHandle = osThreadCreate(osThread(reverseTask), NULL);
+
+  /*char data[] = {'A', 'B', 'C', 'D'};
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
+  */
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -177,7 +189,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -187,12 +201,12 @@ void SystemClock_Config(void)
     */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -214,7 +228,7 @@ static void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 921600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -250,7 +264,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : PB0 PB1 PB2 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
@@ -268,7 +282,7 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
     osDelay(500);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1);
   }
   /* USER CODE END 5 */ 
 }

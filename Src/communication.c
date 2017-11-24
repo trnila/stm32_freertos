@@ -4,6 +4,7 @@
 #include "stm32f1xx_hal.h"
 #include "../Messages/messages.pb.h"
 #include "pb_decode.h"
+#include "pb_encode.h"
 
 #define MESSAGES_MAX 2
 
@@ -23,29 +24,43 @@ void msg_recv(int type, void* msg) {
 	xQueueReceive(queue[type], msg, portMAX_DELAY);
 }
 
+uint8_t frame[20];
 void task_uart(void *huart1) {
-	uint8_t rcv[20];
+	int headerSize = 3;
+	uint8_t *payload = frame + headerSize;
 	GpioControlMsg msg;
 	_huart1 = huart1;
 
 	for(;;) {
-		uint8_t header[3];
-		HAL_UART_Receive(huart1, header, sizeof(header), HAL_MAX_DELAY);
-		int packetSize = (header[1] << 8) | header[2];
+		HAL_UART_Receive(huart1, frame, sizeof(frame), HAL_MAX_DELAY);
+		int packetSize = (frame[1] << 8) | frame[2];
 
-		// ready message body
-		HAL_UART_Receive(huart1, rcv, packetSize, HAL_MAX_DELAY);
-		pb_istream_t stream = pb_istream_from_buffer(rcv, packetSize);
+		pb_istream_t stream = pb_istream_from_buffer(payload, packetSize);
 		if(!pb_decode(&stream, GpioControlMsg_fields, &msg)) {
+			for(;;) {
+				frame[0] = 0;
+			}
+		}
+
+		xQueueSend(queue[frame[0]], &msg, portMAX_DELAY);
+
+		// wait for ack from task
+		uint8_t ackByte;
+		xQueueReceive(queue2, &ackByte, portMAX_DELAY);
+
+		// create ack frame
+		/*AckMsg ack;
+		ack.id = 5;
+		pb_ostream_t ostream = pb_ostream_from_buffer(frame + 3, sizeof(frame) - headerSize);
+		if(!pb_encode(&stream, AckMsg_fields, &ack)) {
 			for(;;);
 		}
 
-		xQueueSend(queue[header[0]], &msg, portMAX_DELAY);
-		taskYIELD();
+		frame[0] = 255;
+		frame[1] = (ostream.bytes_written & 0xFF00) >> 8;
+		frame[2] = ostream.bytes_written & 0xFF;
 
-		uint8_t ack;
-		xQueueReceive(queue2, &ack, portMAX_DELAY);
-		HAL_UART_Transmit(_huart1, &ack, 1, HAL_MAX_DELAY);
+		HAL_UART_Transmit(_huart1, frame, ostream.bytes_written, HAL_MAX_DELAY);*/
 	}
 }
 

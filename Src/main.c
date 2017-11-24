@@ -130,7 +130,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 16);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -138,8 +138,11 @@ int main(void)
 
   osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 128);
   uartTaskHandle = osThreadCreate(osThread(uartTask), &huart1);
-  osThreadDef(reverseTask, task_handle_gpio, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(reverseTask), NULL);
+  osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 128);
+  osThreadCreate(osThread(handleGpioTask), NULL);
+
+  //osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
+  //osThreadCreate(osThread(reverseTask), NULL);
 
   /*char data[] = {'A', 'B', 'C', 'D'};
   xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
@@ -242,6 +245,21 @@ static void MX_USART1_UART_Init(void)
 
 }
 
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
+}
+
 /** Configure pins as 
         * Analog 
         * Input 
@@ -264,7 +282,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : PB0 PB1 PB2 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }

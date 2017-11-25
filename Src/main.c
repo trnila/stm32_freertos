@@ -141,22 +141,12 @@ int main(void)
   osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 64);
   osThreadCreate(osThread(handleGpioTask), NULL);
 
-  osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 64);
+  osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 128);
   osThreadCreate(osThread(handlePing), NULL);
 
 
   //osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
   //osThreadCreate(osThread(reverseTask), NULL);
-
-  /*char data[] = {'A', 'B', 'C', 'D'};
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  xTaskCreate(task_reverse, "a", 128, &data[0], tskIDLE_PRIORITY, NULL);
-  */
 
   /* USER CODE END RTOS_THREADS */
 
@@ -174,8 +164,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-  /* USER CODE END WHILE */
 	  __asm__ volatile("BKPT #01");
+  /* USER CODE END WHILE */
+
   /* USER CODE BEGIN 3 */
 
   }
@@ -324,9 +315,9 @@ void assert_failed(uint8_t* file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	__asm__ volatile("BKPT #01");
+	for(;;);
   /* USER CODE END 6 */
-  __asm__ volatile("BKPT #01");
-  for(;;);
 
 }
 

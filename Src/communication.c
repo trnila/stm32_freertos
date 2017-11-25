@@ -53,7 +53,9 @@ void task_uart(void *huart1) {
 	_huart1 = huart1;
 
 	for(;;) {
-		HAL_UART_Receive(huart1, frame, sizeof(frame), HAL_MAX_DELAY);
+		if(HAL_UART_Receive(huart1, frame, sizeof(frame), 1000) != HAL_OK) {
+			continue;
+		}
 		int packetSize = (frame[1] << 8) | frame[2];
 
 		// unknown message arrived

@@ -27,6 +27,17 @@ void task_handle_gpio(void *param) {
 		ack();
 	}
 }
+
+void task_ping(void* param) {
+	PingMsg msg;
+	for(;;) {
+		msg_recv(2, &msg);
+
+		send(2, &msg);
+
+		ack();
+	}
+}
 /*
 void task_reverse(void *param) {
 	ReverseMsg msg;

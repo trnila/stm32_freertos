@@ -6,11 +6,20 @@
 #include "pb_decode.h"
 #include "pb_encode.h"
 
-#define MESSAGES_MAX 2
+#define MESSAGES_MAX 3
 
 QueueHandle_t queue[MESSAGES_MAX];
 QueueHandle_t queue2;
 void *_huart1;
+
+const int headerSize = 3;
+uint8_t frame[20];
+uint8_t msg[20];
+const pb_field_t *types[] = {
+		 GpioControlMsg_fields,
+		 ReverseMsg_fields,
+		 PingMsg_fields
+};
 
 void msg_init() {
 	for(int i = 0; i < MESSAGES_MAX; i++) {
@@ -24,11 +33,23 @@ void msg_recv(int type, void* msg) {
 	xQueueReceive(queue[type], msg, portMAX_DELAY);
 }
 
-uint8_t frame[20];
+void send(int type, void *data) {
+	pb_ostream_t ostream = pb_ostream_from_buffer(frame + headerSize, sizeof(frame) - headerSize);
+	if(!pb_encode(&ostream, types[type], data)) {
+		for(;;) {
+			frame[19] = 'f';
+		}
+	}
+
+	frame[0] = type;
+	frame[1] = (ostream.bytes_written & 0xFF00) >> 8;
+	frame[2] = ostream.bytes_written & 0xFF;
+
+	HAL_UART_Transmit(_huart1, frame, headerSize + ostream.bytes_written, HAL_MAX_DELAY);
+}
+
 void task_uart(void *huart1) {
-	int headerSize = 3;
 	uint8_t *payload = frame + headerSize;
-	GpioControlMsg msg;
 	_huart1 = huart1;
 
 	for(;;) {
@@ -36,9 +57,10 @@ void task_uart(void *huart1) {
 		int packetSize = (frame[1] << 8) | frame[2];
 
 		pb_istream_t stream = pb_istream_from_buffer(payload, packetSize);
-		if(!pb_decode(&stream, GpioControlMsg_fields, &msg)) {
+		if(!pb_decode(&stream, types[frame[0]], &msg)) {
+			continue;
 			for(;;) {
-				frame[0] = 0;
+				frame[19] = 'f';
 			}
 		}
 
@@ -51,16 +73,19 @@ void task_uart(void *huart1) {
 		// create ack frame
 		/*AckMsg ack;
 		ack.id = 5;
-		pb_ostream_t ostream = pb_ostream_from_buffer(frame + 3, sizeof(frame) - headerSize);
-		if(!pb_encode(&stream, AckMsg_fields, &ack)) {
-			for(;;);
+		pb_ostream_t ostream = pb_ostream_from_buffer(frame + headerSize, sizeof(frame) - headerSize);
+		if(!pb_encode(&ostream, AckMsg_fields, &ack)) {
+			for(;;) {
+				frame[19] = 'f';
+			}
 		}
 
 		frame[0] = 255;
 		frame[1] = (ostream.bytes_written & 0xFF00) >> 8;
 		frame[2] = ostream.bytes_written & 0xFF;
 
-		HAL_UART_Transmit(_huart1, frame, ostream.bytes_written, HAL_MAX_DELAY);*/
+		HAL_UART_Transmit(_huart1, frame, headerSize + ostream.bytes_written, HAL_MAX_DELAY);
+		*/
 	}
 }
 

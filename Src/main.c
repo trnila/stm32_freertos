@@ -130,7 +130,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 32);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -138,8 +138,12 @@ int main(void)
 
   osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 128);
   uartTaskHandle = osThreadCreate(osThread(uartTask), &huart1);
-  osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 128);
+  osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 64);
   osThreadCreate(osThread(handleGpioTask), NULL);
+
+  osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 64);
+  osThreadCreate(osThread(handlePing), NULL);
+
 
   //osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
   //osThreadCreate(osThread(reverseTask), NULL);

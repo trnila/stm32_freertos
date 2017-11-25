@@ -66,7 +66,8 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-	volatile a = 5;
+	__ASM volatile("BKPT #01");
+
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)

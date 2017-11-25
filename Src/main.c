@@ -175,7 +175,7 @@ int main(void)
   while (1)
   {
   /* USER CODE END WHILE */
-
+	  __asm__ volatile("BKPT #01");
   /* USER CODE BEGIN 3 */
 
   }
@@ -303,6 +303,7 @@ void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+  __asm__ volatile("BKPT #01");
   while(1) 
   {
   }
@@ -324,6 +325,8 @@ void assert_failed(uint8_t* file, uint32_t line)
   /* User can add his own implementation to report the file name and line number,
     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
+  __asm__ volatile("BKPT #01");
+  for(;;);
 
 }
 

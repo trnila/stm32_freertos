@@ -56,12 +56,14 @@ void task_uart(void *huart1) {
 		HAL_UART_Receive(huart1, frame, sizeof(frame), HAL_MAX_DELAY);
 		int packetSize = (frame[1] << 8) | frame[2];
 
+		// unknown message arrived
+		if(frame[0] >= MESSAGES_MAX) {
+			continue;
+		}
+
 		pb_istream_t stream = pb_istream_from_buffer(payload, packetSize);
 		if(!pb_decode(&stream, types[frame[0]], &msg)) {
 			continue;
-			for(;;) {
-				frame[19] = 'f';
-			}
 		}
 
 		xQueueSend(queue[frame[0]], &msg, portMAX_DELAY);
@@ -69,23 +71,6 @@ void task_uart(void *huart1) {
 		// wait for ack from task
 		uint8_t ackByte;
 		xQueueReceive(queue2, &ackByte, portMAX_DELAY);
-
-		// create ack frame
-		/*AckMsg ack;
-		ack.id = 5;
-		pb_ostream_t ostream = pb_ostream_from_buffer(frame + headerSize, sizeof(frame) - headerSize);
-		if(!pb_encode(&ostream, AckMsg_fields, &ack)) {
-			for(;;) {
-				frame[19] = 'f';
-			}
-		}
-
-		frame[0] = 255;
-		frame[1] = (ostream.bytes_written & 0xFF00) >> 8;
-		frame[2] = ostream.bytes_written & 0xFF;
-
-		HAL_UART_Transmit(_huart1, frame, headerSize + ostream.bytes_written, HAL_MAX_DELAY);
-		*/
 	}
 }
 

@@ -23,17 +23,20 @@ void task_handle_gpio(void *param) {
 
 		HAL_GPIO_WritePin(gpio, msg.pin, msg.state);
 
-		osDelay(1);
 		ack();
 	}
 }
 
+PrintMsg printMsg;
 void task_ping(void* param) {
 	PingMsg msg;
 	for(;;) {
 		msg_recv(2, &msg);
 
 		send(2, &msg);
+
+		//sprintf(printMsg.msg, "received ping seq: %d", msg.seq);
+		//send(3, &printMsg);
 
 		ack();
 	}

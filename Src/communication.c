@@ -13,12 +13,14 @@ QueueHandle_t queue2;
 void *_huart1;
 
 const int headerSize = 3;
-uint8_t frame[20];
-uint8_t msg[20];
+const int frameSize = 20;
+uint8_t frame[80];
+uint8_t msg[80];
 const pb_field_t *types[] = {
 		 GpioControlMsg_fields,
 		 ReverseMsg_fields,
-		 PingMsg_fields
+		 PingMsg_fields,
+		 PrintMsg_fields
 };
 
 void msg_init() {
@@ -53,7 +55,7 @@ void task_uart(void *huart1) {
 	_huart1 = huart1;
 
 	for(;;) {
-		if(HAL_UART_Receive(huart1, frame, sizeof(frame), 1000) != HAL_OK) {
+		if(HAL_UART_Receive(huart1, frame, frameSize, 100) != HAL_OK) {
 			continue;
 		}
 		int packetSize = (frame[1] << 8) | frame[2];

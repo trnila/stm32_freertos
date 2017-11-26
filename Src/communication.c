@@ -55,7 +55,7 @@ void task_uart(void *huart1) {
 	_huart1 = huart1;
 
 	for(;;) {
-		if(HAL_UART_Receive(huart1, frame, frameSize, 100) != HAL_OK) {
+		if(HAL_UART_Receive(huart1, frame, frameSize, 10) != HAL_OK) {
 			continue;
 		}
 		int packetSize = (frame[1] << 8) | frame[2];

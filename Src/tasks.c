@@ -35,8 +35,8 @@ void task_ping(void* param) {
 
 		send(2, &msg);
 
-		//sprintf(printMsg.msg, "received ping seq: %d", msg.seq);
-		//send(3, &printMsg);
+		sprintf(printMsg.msg, "received ping seq: %d", msg.seq);
+		send(3, &printMsg);
 
 		ack();
 	}

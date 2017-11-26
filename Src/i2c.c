@@ -7,7 +7,6 @@
 
 osThreadId thread;
 uint8_t data[2];
-SemaphoreHandle_t i2c_sem;
 
 void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 	configASSERT(osThreadResume(thread) == osOK);

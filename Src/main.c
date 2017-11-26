@@ -56,6 +56,7 @@
 #include "pb_decode.h"
 #include "../Messages/messages.pb.h"
 #include "tasks.h"
+#include "i2c.h"
 #include "communication.h"
 
 /* USER CODE END Includes */

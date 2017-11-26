@@ -56,18 +56,6 @@ GPIO_TypeDef *numToPort(int n) {
 	return NULL;
 }
 
-void task_i2c(void *i2c) {
-	uint8_t data[2];
-	for(;;) {
-		int status = HAL_I2C_Slave_Receive(i2c, data, sizeof(data), 10);
-		if(status != HAL_OK) {
-			//_Error_Handler(__FILE__, __LINE__);
-			continue;
-		}
-
-		HAL_GPIO_WritePin(GPIOB, data[0], data[1] ? SET : RESET);
-	}
-}
 /*
 void task_reverse(void *param) {
 	ReverseMsg msg;

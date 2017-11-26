@@ -4,6 +4,8 @@
 #include "pb_encode.h"
 #include "../Messages/messages.pb.h"
 
+PrintMsg printMsg;
+
 void task_handle_gpio(void *param) {
 	GpioControlMsg msg;
 	for(;;) {
@@ -27,7 +29,6 @@ void task_handle_gpio(void *param) {
 	}
 }
 
-PrintMsg printMsg;
 void task_ping(void* param) {
 	PingMsg msg;
 	for(;;) {
@@ -41,6 +42,20 @@ void task_ping(void* param) {
 		ack();
 	}
 }
+
+GPIO_TypeDef *numToPort(int n) {
+	switch(n) {
+	case 0:
+		return GPIOA;
+	case 1:
+		return GPIOB;
+	case 2:
+		return GPIOC;
+	}
+
+	return NULL;
+}
+
 /*
 void task_reverse(void *param) {
 	ReverseMsg msg;

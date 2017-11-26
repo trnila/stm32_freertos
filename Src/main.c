@@ -56,11 +56,14 @@
 #include "pb_decode.h"
 #include "../Messages/messages.pb.h"
 #include "tasks.h"
+#include "i2c.h"
 #include "communication.h"
 
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 UART_HandleTypeDef huart1;
 
 osThreadId defaultTaskHandle;
@@ -76,6 +79,7 @@ osThreadId reverseTaskHandle;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_I2C1_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -113,6 +117,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
 
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
@@ -143,6 +148,9 @@ int main(void)
 
   osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 128);
   osThreadCreate(osThread(handlePing), NULL);
+
+  osThreadDef(handleI2C, task_i2c, osPriorityNormal, 0, 128);
+  osThreadCreate(osThread(handleI2C), &hi2c1);
 
 
   //osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
@@ -221,6 +229,26 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
 }
 
+/* I2C1 init function */
+static void MX_I2C1_Init(void)
+{
+
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 16;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
 /* USART1 init function */
 static void MX_USART1_UART_Init(void)
 {
@@ -280,7 +308,7 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
     osDelay(500);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
   }
   /* USER CODE END 5 */ 
 }

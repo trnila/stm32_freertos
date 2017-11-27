@@ -154,8 +154,8 @@ int main(void)
   //osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 128);
   //osThreadCreate(osThread(handlePing), NULL);
 
-  osThreadDef(handleI2C, task_i2c, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(handleI2C), &hi2c1);
+  //osThreadDef(handleI2C, task_i2c, osPriorityNormal, 0, 128);
+  //osThreadCreate(osThread(handleI2C), &hi2c1);
 
   osThreadDef(handleSPI, task_spi, osPriorityNormal, 0, 128);
   osThreadCreate(osThread(handleSPI), &hspi2);

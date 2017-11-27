@@ -3,7 +3,7 @@
 #include "pb.h"
 #include "pb_encode.h"
 #include "../Messages/messages.pb.h"
-
+/*
 PrintMsg printMsg;
 
 void task_handle_gpio(void *param) {

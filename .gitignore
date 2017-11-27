@@ -1,1 +1,6 @@
 Debug
+*.tmp
+Src/messages.h
+Src/messages_server.cpp
+Src/messages_server.h
+Src/erpc_crc16.h

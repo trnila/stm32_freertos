@@ -5,7 +5,9 @@
 #include "../Messages/messages.pb.h"
 #include "pb_decode.h"
 #include "pb_encode.h"
+#include "messages_server.h"
 
+/*
 #define MESSAGES_MAX 3
 
 QueueHandle_t queue[MESSAGES_MAX];
@@ -81,4 +83,20 @@ void task_uart(void *huart1) {
 void ack() {
 	uint8_t ack = 'x';
 	xQueueSend(queue2, &ack, portMAX_DELAY);
+}*/
+
+uint8_t set_led(Port port, uint8_t led, bool on) {
+	HAL_GPIO_WritePin(GPIOB, 4, SET);
+
+	return 255;
+}
+
+void task_uart(void *huart1) {
+	erpc_server_init(erpc_transport_cmsis_uart_init(huart1), erpc_mbf_static_init());
+
+	// Add the IO service.
+	erpc_add_service_to_server(create_IO_service());
+
+	// Run the server.
+	erpc_server_run();
 }

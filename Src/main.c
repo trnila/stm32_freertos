@@ -144,15 +144,15 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  msg_init();
+//  msg_init();
 
-  osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 128);
+  osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 512);
   uartTaskHandle = osThreadCreate(osThread(uartTask), &huart1);
-  osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 64);
-  osThreadCreate(osThread(handleGpioTask), NULL);
+  //osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 64);
+  //osThreadCreate(osThread(handleGpioTask), NULL);
 
-  osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(handlePing), NULL);
+  //osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 128);
+  //osThreadCreate(osThread(handlePing), NULL);
 
   osThreadDef(handleI2C, task_i2c, osPriorityNormal, 0, 128);
   osThreadCreate(osThread(handleI2C), &hi2c1);

@@ -8,8 +8,12 @@ using namespace erpc;
 // Variables
 ////////////////////////////////////////////////////////////////////////////////
 
-static volatile bool s_isTransferReceiveCompleted = false;
-static volatile bool s_isTransferSendCompleted = false;
+const int SIZE = 128;
+static uint8_t buffer[SIZE];
+static volatile uint32_t head;
+static volatile uint32_t tail;
+static UART_HandleTypeDef *huart;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Code
@@ -18,6 +22,8 @@ static volatile bool s_isTransferSendCompleted = false;
 UartHalTransport::UartHalTransport(UART_HandleTypeDef *uartDrv)
 : m_uartDrv(uartDrv)
 {
+	huart = uartDrv;
+	HAL_UART_Receive_IT(huart, buffer, 1);
 }
 
 UartHalTransport::~UartHalTransport()
@@ -25,17 +31,9 @@ UartHalTransport::~UartHalTransport()
 }
 
 /* Transfer callback */
-void TransferCallback(uint32_t event)
-{
-    /*if (event == ARM_USART_EVENT_SEND_COMPLETE)
-    {
-        s_isTransferSendCompleted = true;
-    }
-
-    if (event == ARM_USART_EVENT_RECEIVE_COMPLETE)
-    {
-        s_isTransferReceiveCompleted = true;
-    }*/
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *hspi) {
+	tail = (tail + 1) % SIZE;
+	HAL_UART_Receive_IT(huart, buffer + tail, 1);
 }
 
 erpc_status_t UartHalTransport::init()
@@ -45,17 +43,18 @@ erpc_status_t UartHalTransport::init()
 
 erpc_status_t UartHalTransport::underlyingReceive(uint8_t *data, uint32_t size)
 {
-    s_isTransferReceiveCompleted = false;
+    while(head + size > tail);
 
-    HAL_UART_Receive(m_uartDrv, data, size, HAL_MAX_DELAY);
+    for(int i = 0; i < size; i++) {
+    	data[i] = buffer[head];
+    	head = (head + 1) % SIZE;
+    }
 
     return kErpcStatus_Success;
 }
 
 erpc_status_t UartHalTransport::underlyingSend(const uint8_t *data, uint32_t size)
 {
-    s_isTransferSendCompleted = false;
-
     HAL_UART_Transmit(m_uartDrv, (uint8_t*) data, size, HAL_MAX_DELAY);
 
     return kErpcStatus_Success;

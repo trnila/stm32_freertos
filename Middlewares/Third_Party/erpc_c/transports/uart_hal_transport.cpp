@@ -43,9 +43,10 @@ erpc_status_t UartHalTransport::init()
 
 erpc_status_t UartHalTransport::underlyingReceive(uint8_t *data, uint32_t size)
 {
-    while(head + size > tail);
+    //while(head + size > tail);
 
-    for(int i = 0; i < size; i++) {
+    for(uint32_t i = 0; i < size; i++) {
+    	while(head == tail);
     	data[i] = buffer[head];
     	head = (head + 1) % SIZE;
     }

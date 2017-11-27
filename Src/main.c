@@ -52,9 +52,6 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */
-#include "pb.h"
-#include "pb_decode.h"
-#include "../Messages/messages.pb.h"
 #include "tasks.h"
 #include "i2c.h"
 #include "spi.h"
@@ -98,8 +95,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	//__disable_irq();
-//	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
   /* USER CODE END 1 */
 
@@ -144,25 +139,14 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-//  msg_init();
-
   osThreadDef(uartTask, task_uart, osPriorityNormal, 0, 512);
   uartTaskHandle = osThreadCreate(osThread(uartTask), &huart1);
-  //osThreadDef(handleGpioTask, task_handle_gpio, osPriorityNormal, 0, 64);
-  //osThreadCreate(osThread(handleGpioTask), NULL);
-
-  //osThreadDef(handlePing, task_ping, osPriorityNormal, 0, 128);
-  //osThreadCreate(osThread(handlePing), NULL);
 
   //osThreadDef(handleI2C, task_i2c, osPriorityNormal, 0, 128);
   //osThreadCreate(osThread(handleI2C), &hi2c1);
 
   osThreadDef(handleSPI, task_spi, osPriorityNormal, 0, 128);
   osThreadCreate(osThread(handleSPI), &hspi2);
-
-
-  //osThreadDef(reverseTask, task_reverse, osPriorityNormal, 0, 128);
-  //osThreadCreate(osThread(reverseTask), NULL);
 
   /* USER CODE END RTOS_THREADS */
 

@@ -25,7 +25,9 @@ uint8_t set_led(Port port, uint8_t led, bool on) {
 void task_uart(void *huart1) {
 	erpc_server_init(erpc_transport_cmsis_uart_init(huart1), erpc_mbf_static_init());
 	erpc_add_service_to_server(create_IO_service());
-	erpc_server_run();
 
+	for(;;) {
+		erpc_server_run();
+	}
 	configASSERT(0);
 }

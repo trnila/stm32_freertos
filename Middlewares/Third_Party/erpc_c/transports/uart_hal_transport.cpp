@@ -9,6 +9,7 @@ using namespace erpc;
 ////////////////////////////////////////////////////////////////////////////////
 
 const int SIZE = 128;
+const int TIMEOUT = 5;
 static uint8_t buffer[SIZE];
 static volatile uint32_t head;
 static volatile uint32_t tail;
@@ -43,8 +44,16 @@ erpc_status_t UartHalTransport::init()
 
 erpc_status_t UartHalTransport::underlyingReceive(uint8_t *data, uint32_t size)
 {
+	int start;
     for(uint32_t i = 0; i < size; i++) {
-    	while(head == tail);
+    	while(head == tail) {
+    		if(i != 0 && HAL_GetTick() - start > TIMEOUT) {
+				return kErpcStatus_Timeout;
+			}
+    	}
+
+    	start = HAL_GetTick();
+
     	data[i] = buffer[head];
     	head = (head + 1) % SIZE;
     }

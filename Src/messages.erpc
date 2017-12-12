@@ -9,7 +9,15 @@ enum Direction {
 	Left
 }
 
+enum Ctrl {
+    Ctrl_start,
+    Ctrl_pause,
+    Ctrl_restart
+}
+
 interface IO {
 	set_led(Port port, uint8 led, bool on) -> uint8
+
 	led_strip(uint32 delay, Direction dir) -> bool
+	led_ctrl(Ctrl ctrl) -> bool
 }

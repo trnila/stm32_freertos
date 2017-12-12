@@ -43,9 +43,6 @@ void task_i2c(void *i2c) {
 	task = xTaskGetCurrentTaskHandle();
 	configASSERT(task != NULL);
 
-    eventGroup = xEventGroupCreate();
-    configASSERT(eventGroup != NULL);
-
 	// setup all GPIO pins as OUT
 	data[0] =  MCP23017_IODIRA;
 	data[1] = 0x00;

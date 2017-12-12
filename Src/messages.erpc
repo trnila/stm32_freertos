@@ -4,6 +4,12 @@ enum Port {
 	GPIO_C
 }
 
+enum Direction {
+	Right
+	Left
+}
+
 interface IO {
 	set_led(Port port, uint8 led, bool on) -> uint8
+	led_strip(uint32 delay, Direction dir) -> bool
 }

@@ -19,7 +19,7 @@ GPIO_TypeDef* mapPort(Port port) {
 
 uint8_t set_led(Port port, uint8_t led, bool on) {
 	HAL_GPIO_WritePin(mapPort(port), led, on ? SET : RESET);
-	return 255;
+	return led + on;
 }
 
 void task_uart(void *huart1) {

@@ -5,6 +5,7 @@
 #include "messages.h"
 #include "i2c.h"
 
+TaskHandle_t task;
 EventGroupHandle_t eventGroup;
 uint8_t data[2];
 uint32_t delay = 500;
@@ -19,8 +20,8 @@ const int MCP23017_IODIRA = 0x00;
 bool led_strip(uint32_t delay_, Direction dir) {
 	delay = delay_;
 
-	xEventGroupSetBits(eventGroup, 0x1);
-	taskYIELD();
+	xTaskNotifyGive(task);
+	return true;
 }
 
 bool led_ctrl(Ctrl ctrl) {
@@ -34,11 +35,14 @@ bool led_ctrl(Ctrl ctrl) {
 		}
 	}
 
-	xEventGroupSetBits(eventGroup, 0x1);
-	taskYIELD();
+	xTaskNotifyGive(task);
+	return true;
 }
 
 void task_i2c(void *i2c) {
+	task = xTaskGetCurrentTaskHandle();
+	configASSERT(task != NULL);
+
     eventGroup = xEventGroupCreate();
     configASSERT(eventGroup != NULL);
 
@@ -50,7 +54,7 @@ void task_i2c(void *i2c) {
 	}
 
 	for(;;) {
-		EventBits_t bits = xEventGroupWaitBits(eventGroup, 0x07, pdTRUE, pdFALSE, running ? delay : portMAX_DELAY);
+		ulTaskNotifyTake(pdTRUE, running ? delay : portMAX_DELAY);
 
 		data[0] =  MCP23017_GPIOA;
 		data[1] = running ? 1 << led : 0x00;
